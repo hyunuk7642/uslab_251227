@@ -53,8 +53,11 @@ This project is configured to deploy on Netlify using the `@netlify/plugin-nextj
 
 1. Push your code to GitHub
 2. Connect your repository to Netlify
-3. Set the environment variables in Netlify dashboard
-4. Deploy!
+3. **중요**: Netlify UI에서 **Site settings** > **Build & deploy** > **Build settings**로 이동하여:
+   - **Publish directory**를 비워두거나 제거하세요 (빈 값으로 설정)
+   - `@netlify/plugin-nextjs` 플러그인이 자동으로 처리하므로 publish 디렉토리를 설정하면 안 됩니다
+4. Set the environment variables in Netlify dashboard
+5. Deploy!
 
 The `netlify.toml` file is already configured with the correct settings.
 
