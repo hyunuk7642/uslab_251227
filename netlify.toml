@@ -1,9 +1,8 @@
 [build]
   command = "npm run build"
-  # 중요: @netlify/plugin-nextjs는 publish 디렉토리를 자동으로 처리합니다
-  # UI 설정을 오버라이드하기 위해 명시적으로 .next로 설정 (플러그인이 자동으로 처리)
-  # 하지만 가장 좋은 방법은 Netlify UI에서 Publish directory를 비우는 것입니다
-  publish = ".next"
+  # 중요: @netlify/plugin-nextjs를 사용할 때는 publish 디렉토리를 설정하면 안 됩니다
+  # 플러그인이 자동으로 처리하므로 publish 설정을 제거했습니다
+  # Netlify UI에서도 Publish directory를 반드시 비워야 합니다!
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
