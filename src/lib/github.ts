@@ -1,6 +1,7 @@
 
 import { Octokit } from 'octokit';
 import { Buffer } from 'buffer';
+import matter from 'gray-matter';
 
 export class GitHubService {
     private octokit: Octokit;
@@ -89,7 +90,6 @@ export class GitHubService {
 
     async createPost(slug: string, content: string, frontmatter: any) {
         const path = `content/posts/${slug}.md`;
-        const matter = require('gray-matter');
         const fileContent = matter.stringify(content, frontmatter);
 
         await this.createOrUpdateFile(path, fileContent, `feat(blog): Create post ${slug}`);
