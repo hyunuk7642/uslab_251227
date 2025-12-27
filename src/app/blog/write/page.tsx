@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useAutoSave } from '@/lib/hooks/useAutoSave';
-import { createClient } from '@/lib/supabase/client';
+
 import BlogEditor from '@/components/editor/BlogEditor';
 import type { JSONContent } from 'novel';
 
 export default function BlogWritePage() {
-    const supabase = createClient();
+
     const [title, setTitle] = useState('');
     const [content, setContent] = useState<JSONContent | undefined>(undefined);
     const [slug, setSlug] = useState('');
@@ -73,31 +73,76 @@ export default function BlogWritePage() {
         }
     };
 
+    const [markdown, setMarkdown] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
     const handleContentChange = (newContent: JSONContent) => {
         setContent(newContent);
         triggerSave(newContent, title);
+    };
+
+    const handleMarkdownChange = (md: string) => {
+        setMarkdown(md);
+    };
+
+    const handlePublish = async () => {
+        if (!title.trim() || !slug.trim()) {
+            alert('Title and Slug are required.');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const response = await fetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    slug,
+                    markdown, // Send Markdown
+                    content, // Send JSON backup if needed (optional)
+                }),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Failed to publish');
+            }
+
+            const data = await response.json();
+            alert(`Published successfully to GitHub!\nFile: ${data.path}`);
+        } catch (error: any) {
+            console.error(error);
+            alert(`Publish failed: ${error.message}`);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             <div className="mb-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Write a Post</h1>
-                {/* Save Status */}
-                <div className="flex items-center gap-2 text-xs">
-                    {saveStatus === 'saving' && (
-                        <span className="text-yellow-600 dark:text-yellow-400">Saving...</span>
-                    )}
-                    {saveStatus === 'saved' && lastSaved && (
-                        <span className="text-green-600 dark:text-green-400">
-                            Saved {lastSaved.toLocaleTimeString()}
-                        </span>
-                    )}
-                    {saveStatus === 'error' && (
-                        <span className="text-red-600">Save Failed</span>
-                    )}
-                    {saveStatus === 'offline' && (
-                        <span className="text-slate-600">Offline</span>
-                    )}
+                <div className="flex items-center gap-4">
+                    {/* Save Status */}
+                    <div className="flex items-center gap-2 text-xs">
+                        {saveStatus === 'saving' && (
+                            <span className="text-yellow-600 dark:text-yellow-400">Saving Draft...</span>
+                        )}
+                        {saveStatus === 'saved' && lastSaved && (
+                            <span className="text-green-600 dark:text-green-400">
+                                Draft Saved {lastSaved.toLocaleTimeString()}
+                            </span>
+                        )}
+                    </div>
+
+                    <button
+                        onClick={handlePublish}
+                        disabled={isSaving}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    >
+                        {isSaving ? 'Publishing...' : 'Publish to GitHub'}
+                    </button>
                 </div>
             </div>
 
@@ -125,6 +170,7 @@ export default function BlogWritePage() {
             <BlogEditor
                 content={content}
                 onChange={handleContentChange}
+                onMarkdownChange={handleMarkdownChange}
             />
         </div>
     );

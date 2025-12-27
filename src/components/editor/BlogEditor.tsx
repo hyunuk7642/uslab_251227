@@ -21,33 +21,37 @@ const handleImageDrop = (view: any, event: any, moved: any, uploadFn: any) => {
 
 import { ImageResizeExtension } from './extensions/ImageResizeExtension';
 import { extensions, suggestionItems } from './extensions';
-import { createClient } from '@/lib/supabase/client';
 import EditorBubbleMenu from './BubbleMenu';
 
 interface BlogEditorProps {
     content?: JSONContent;
     onChange?: (content: JSONContent) => void;
+    onMarkdownChange?: (markdown: string) => void;
 }
 
-export default function BlogEditor({ content, onChange }: BlogEditorProps) {
+export default function BlogEditor({ content, onChange, onMarkdownChange }: BlogEditorProps) {
     const [uploading, setUploading] = useState(false);
-    const supabase = createClient();
+
 
     // Image Upload Function
     const uploadFn = async (file: File) => {
         setUploading(true);
         try {
-            // Mock Upload logic from supabase client
-            // In real app: 
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `blog-images/${fileName}`;
+            const formData = new FormData();
+            formData.append('file', file);
 
-            const { error } = await supabase.storage.from('blog-images').upload(filePath, file);
-            if (error) throw error;
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
 
-            const { data } = supabase.storage.from('blog-images').getPublicUrl(filePath);
-            return data.publicUrl;
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Upload failed');
+            }
+
+            const data = await response.json();
+            return data.url;
         } catch (err) {
             console.error(err);
             throw err;
@@ -81,6 +85,7 @@ export default function BlogEditor({ content, onChange }: BlogEditorProps) {
                     }}
                     onUpdate={({ editor }) => {
                         onChange?.(editor.getJSON());
+                        onMarkdownChange?.(editor.storage.markdown.getMarkdown());
                     }}
                     slotAfter={<EditorBubbleMenu editor={null as any} />}
                 >

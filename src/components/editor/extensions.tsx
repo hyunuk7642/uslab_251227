@@ -11,6 +11,7 @@ import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Highlight from '@tiptap/extension-highlight';
 import Placeholder from '@tiptap/extension-placeholder';
+import { Markdown } from 'tiptap-markdown';
 import {
     CheckSquare, Code, Heading1, Heading2, Heading3,
     List, ListOrdered, Text, TextQuote, Image as ImageIcon, Youtube,
@@ -236,5 +237,6 @@ export const extensions = [
         placeholder: 'Press / for commands...',
         includeChildren: true,
     }),
+    Markdown,
     slashCommand,
 ];
